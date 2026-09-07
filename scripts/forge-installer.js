@@ -309,7 +309,16 @@ function installApp(repo, plan, options, platform) {
   plan.push({ op: 'app-build', command: 'bash', args: [script, '--install'], destination: '/Applications/Forge.app' });
   if (options.dryRun) return { requested: true, status: 'planned', script };
   const runner = options.spawnSync || spawnSync;
-  const result = runner('bash', [script, '--install'], { cwd: repo, shell: false, stdio: 'inherit' });
+  // The build's progress must never reach THIS process's stdout when the caller
+  // consumes it as JSON: the remote bootstrap runs `forge-update.js --source
+  // local --json` and parses stdout (forge-update-remote.js §
+  // runBootstrappedUpdate). Measured 2026-09-07 on a real 4.21.2 → 4.32.0
+  // update: swift's "▸ Limpando…" corrupted the report and a fully applied
+  // install was announced as `bootstrap remoto retornou JSON inválido`. Routed
+  // to stderr rather than silenced — the stream still reaches the operator, and
+  // on failure it is what spawnSync hands back as the diagnostic.
+  const stdio = options.jsonOutput ? ['inherit', 2, 'inherit'] : 'inherit';
+  const result = runner('bash', [script, '--install'], { cwd: repo, shell: false, stdio });
   if (result && result.error) throw new Error(`app build falhou: ${result.error.message}`);
   if (!result || result.status !== 0) throw new Error(`app build falhou com exit ${result && result.status}`);
   return { requested: true, status: 'installed', script, destination: '/Applications/Forge.app' };

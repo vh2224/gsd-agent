@@ -64,6 +64,19 @@ test('--with-app is planned on macOS, executed through bash, and skipped elsewhe
   assert.strictEqual(built.status, 'installed');
   assert.deepStrictEqual(calls[0].args.slice(-1), ['--install']);
   assert.strictEqual(calls[0].options.shell, false);
+  assert.strictEqual(calls[0].options.stdio, 'inherit');
+  // In JSON mode this process's stdout is the report the remote bootstrap
+  // parses; the swift build's progress corrupted it once (2026-09-07, "▸
+  // Limpando…" inside the JSON) and a fully applied install read as a failure.
+  const jsonCalls = [];
+  const routed = installer.installApp(repo, [], {
+    withApp: true,
+    jsonOutput: true,
+    spawnSync: (command, args, options) => { jsonCalls.push({ command, args, options }); return { status: 0 }; },
+  }, 'darwin');
+  assert.strictEqual(routed.status, 'installed');
+  assert.deepStrictEqual(jsonCalls[0].options.stdio, ['inherit', 2, 'inherit'],
+    'em modo JSON o stdout do build precisa desaguar no stderr, nunca no relatório');
   assert.strictEqual(installer.installApp(repo, [], { withApp: true }, 'linux').reason, 'macos-only');
   assert.strictEqual(installer.installApp(repo, [], { withApp: true }, 'win32').reason, 'macos-only');
 });
