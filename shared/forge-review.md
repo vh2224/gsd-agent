@@ -17,7 +17,7 @@ The gate stages two independent agents against the slice diff:
 
 The human only adjudicates what the two AIs genuinely disagree on. Everything else resolves between them — and what they **agree** is broken gets fixed on the spot (Step 7a), not archived. The gate **never blocks** `complete-slice` and never returns a blocker; what remains open is guaranteed to reach the operator at the milestone-final triage (Step 9) before `complete-milestone` runs.
 
-> Why the orchestrator and not `forge-completer`: agents cannot call `Agent` or `AskUserQuestion`. The completer (`tools: Read, Write, Edit, Bash`) physically cannot dispatch the reviewer or ask the user. The skills run in the main context and own both tools.
+> Why the orchestrator and not `forge-completer`: agents cannot call `Agent` or `AskUserQuestion`. The completer (`tools: Read, Write, Edit, Bash`) physically cannot dispatch the reviewer or ask the user. The skills run in the main context and check permitted native tools under the interaction contract.
 
 ## Inputs
 - `WORKING_DIR` — absolute project root (bash-captured `pwd`, Windows-safe)
@@ -1189,3 +1189,5 @@ When `style == flags`: run Step 2 only — routed by `challenger` (so `codex`/`g
 - `shared/forge-plan-gate.md § Deferir resolution` — the sibling consumer of **§ Item capture** for plan-gate deferrals (does not restate the invocation)
 - Artifact: `.gsd/milestones/{M###}/slices/{S##}/{S##}-REVIEW.md` (durable with the milestone; cleaned by `milestone_cleanup`)
 - Artifact: `.gsd/items/*.md` (work items created by this spec; durable — never cleaned by `milestone_cleanup`)
+
+**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.

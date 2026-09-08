@@ -1510,3 +1510,5 @@ saved_at: {ISO8601}
 3. Tell the user: "Trabalho parcial salvo. Execute `/forge-next` para retomar de onde parou."
 
 On resume: per-run STATE has `phase: resume` → read `continue.md`, inline into worker prompt with instruction "Resume from continue.md — skip completed work, start from Next Action."
+
+**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.
