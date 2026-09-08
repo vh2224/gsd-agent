@@ -866,5 +866,3 @@ Knobs consumidos exclusivamente pelo app macOS (Forge.app) — não pelo CLI. Re
 - **Tipo:** string
 - **Default:** `""`
 - **Descrição:** Diretório onde uma sessão shell/chat iniciada sem projeto abre. Vazio = $HOME. Um `~/` no início é expandido.
-
-**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.

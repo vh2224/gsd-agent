@@ -1,5 +1,7 @@
 # Forge Review — Dialectic Confrontation
 
+**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.
+
 Authoritative spec for the **review gate**: a two-agent confrontation on a completed diff, run from the orchestrator context. Two consumers bind it at their own boundary:
 
 | Consumer | Boundary | DIFF_CMD | Artifact | MODE |
@@ -1189,5 +1191,3 @@ When `style == flags`: run Step 2 only — routed by `challenger` (so `codex`/`g
 - `shared/forge-plan-gate.md § Deferir resolution` — the sibling consumer of **§ Item capture** for plan-gate deferrals (does not restate the invocation)
 - Artifact: `.gsd/milestones/{M###}/slices/{S##}/{S##}-REVIEW.md` (durable with the milestone; cleaned by `milestone_cleanup`)
 - Artifact: `.gsd/items/*.md` (work items created by this spec; durable — never cleaned by `milestone_cleanup`)
-
-**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.
