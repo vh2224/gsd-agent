@@ -386,3 +386,5 @@ The allowed fallback contract now carries `WORKER_MODE == native`; run Tier
 Resolution (step 1.5) and Effort Resolution (step 1.55), then use the
 host-native planning machinery. The resolver refusal branch above launches
 nothing and emits no fallback event. No retry — not a 4th recovery layer.
+
+**Native questions:** Before conducting questions, read `shared/forge-interaction.md` (or `${FORGE_HOME:-~/.forge-agent}/shared/forge-interaction.md` in consumer projects). Apply its host adapter to every question example below and in loaded references; required unanswered decisions remain pending. Existing auto/headless deferment policies still apply.

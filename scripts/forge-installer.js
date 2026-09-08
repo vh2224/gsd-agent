@@ -445,11 +445,29 @@ function install(input = {}) {
     dryRun: options.dryRun,
     update: options.update,
     migrateLegacy: options.migrateLegacy,
+    questionSpawnSync: options.questionSpawnSync,
+    codexQuestionBinary: options.codexQuestionBinary,
+    env: options.env,
     ownership: priorManifest.ownership && typeof priorManifest.ownership === 'object' ? priorManifest.ownership : {},
     // Undefined lets each renderer build its own resolver from `repo`; an explicit
     // null disables the release rung; an object is an injected resolver (tests).
     provenance: options.provenance,
   });
+  // Standing interaction rules also reach operator-owned instruction files.
+  // This owns only its separate marker span; self-sourced repo files stay intact.
+  const interaction = require('./forge-interaction');
+  for (const host of selected) {
+    const file = path.join(projectRoot, host === 'codex' ? 'AGENTS.md' : 'CLAUDE.md');
+    const report = generated.reports[host];
+    if ((report.self_sourced || []).some((entry) => entry.destination === file)) continue;
+    const current = exists(file) ? fs.readFileSync(file, 'utf8') : '';
+    const synced = interaction.sync(current);
+    if (synced.malformed) {
+      plan.push({ op: 'skip', destination: file, reason: synced.malformed });
+    } else if (synced.content !== current) {
+      writeText(file, synced.content, plan, options);
+    }
+  }
   const existingManifest = priorManifest;
   const adapterManifest = { ...(existingManifest.adapters || {}) };
   for (const host of selected) {
@@ -471,7 +489,10 @@ function install(input = {}) {
     // manifest and not only in one run's stdout.
     const adopted = report ? (report.written || []).filter((item) => item.reason === 'release-adopted').map((item) => item.destination) : [];
     const selfSourced = report ? (report.self_sourced || []).map((item) => item.destination) : [];
-    adapterManifest[host] = { home, project_root: projectRoot, files, project_files: projectFiles, conflicts, adopted, self_sourced: selfSourced };
+    const questionConfig = artifacts.find(item => item.kind === 'config');
+    adapterManifest[host] = { home, project_root: projectRoot, files, project_files: projectFiles, conflicts, adopted, self_sourced: selfSourced,
+      ...(host === 'codex' ? { questions: { ...report.question_capability, setting_reason: questionConfig && questionConfig.question_reason } } : {}),
+    };
     writeText(path.join(root, 'manifest.json'), JSON.stringify({ runtime: host, version: VERSION, files, project_files: projectFiles, conflicts, adopted, self_sourced: selfSourced }, null, 2) + '\n', plan, options);
   }
   const installedHosts = Object.keys(adapterManifest).sort();
@@ -561,7 +582,11 @@ function render(report) {
   const operatorOwned = allConflicts.filter((item) => path.basename(String(item && item.destination || '')) === 'settings.json');
   const statusLineConflicts = allConflicts.filter((item) => item.reason === 'status-line-manual-merge');
   for (const item of statusLineConflicts) lines.push(`Status line preserved: ${item.destination}; use Codex /statusline to configure the desired indicators manually.`);
-  const legacyConflicts = allConflicts.filter((item) => !operatorOwned.includes(item) && !statusLineConflicts.includes(item));
+  const questionConflicts = allConflicts.filter(item => item.reason === 'questions-manual-merge');
+  const questionReport = report.manifest && report.manifest.adapters && report.manifest.adapters.codex && report.manifest.adapters.codex.questions;
+  if (questionReport) lines.push(`Codex questions: ${questionReport.reason}; ${questionReport.setting_reason || 'setting unchanged'}. Session tool restrictions still apply.`);
+  for (const item of questionConflicts) lines.push(`Codex question setting preserved: ${item.destination}; questions-manual-merge (ambiguous configuration).`);
+  const legacyConflicts = allConflicts.filter((item) => !operatorOwned.includes(item) && !statusLineConflicts.includes(item) && !questionConflicts.includes(item));
   // Name them. A bare count is the reason this drift stays invisible: the
   // operator is told that N files were left behind but not WHICH, so a stale
   // destination on the execution path reads exactly like a stale destination
